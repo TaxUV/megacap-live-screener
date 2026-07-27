@@ -118,9 +118,9 @@
   <h1>Live Screener &amp; Gold — Growth Below the 200-DMA</h1>
   <p class="sub">A screener over 37 US mega-caps. It computes the top 10 — not a fixed list — that pass a two-part gate:
   (1) revenue &amp; net-income growth in USD above your minimum rates, and (2) price trading <b>below</b> its 200-day average by at
-  least the amount you set (a pullback vs the long-term trend). Price, 50/200-DMA, market cap, P/E &amp; financials are pulled
-  <b>live from stockanalysis.com</b> — no key, no login. If a browser blocks the live fetch it falls back to a built-in snapshot.
-  Every name also links to its live stats page. Click any name for its chart, technicals and financials.</p>
+  least the amount you set (a pullback vs the long-term trend). <b>Prices refresh live</b> from stockanalysis.com on load and every
+  2 minutes — no key, no login — and the % vs 200-DMA, market cap and P/E recompute from that live price, so the top 10 re-ranks as
+  the market moves. Every name also links to its live stats page. Click any name for its chart, technicals and financials.</p>
 </header>
 
 <div class="thesis">
@@ -162,7 +162,7 @@
 <div class="section-t"><h2>Top 10 — passing the gate</h2><span id="top10note"></span></div>
 <div id="top10"><div class="empty" id="emptyTop">Loading…</div></div>
 
-<div class="section-t"><h2>Full universe scan</h2><span>click any row for chart, technicals &amp; financials · click a header to sort</span></div>
+<div class="section-t"><h2>Full universe scan</h2><span><span style="color:var(--green)">● Price is live</span> (auto-refreshes every 2 min) · click any row for chart, technicals &amp; financials · click a header to sort</span></div>
 <div class="card" style="padding:6px 10px"><div id="unitable"></div></div>
 
 <div class="section-t"><h2>Live Market &amp; Gold</h2><span>S&amp;P 500 · Nasdaq 100 · Spot Gold — live</span></div>
@@ -221,7 +221,9 @@ const UNIVERSE=[
  {s:"MCD",  tv:"NYSE:MCD",    n:"McDonald's", sec:"Consumer"}
 ];
 
-/* ---------------- Fallback snapshot (stockanalysis.com, 9 Jul 2026) ----------------
+/* ---------------- Annual financials source (revenue & net income, index [6]) ----------------
+   Only index [6] (the 5-yr [year, revenue$B, netIncome$B] series) is used; these update quarterly.
+   Legacy price/DMA fields here are superseded by BASE + live quotes below.
    [price, chg%, sma50, sma200, marketCapB, PE, [[year,revenue$B,netIncome$B],...]] */
 const SNAP_DATE="9 Jul 2026";
 const SNAP={
@@ -264,6 +266,33 @@ const SNAP={
  MCD:[276.875,-0.49,279.2,303.03,196.7,22.94,[[2021,23.22,7.55],[2022,23.18,6.18],[2023,25.49,8.47],[2024,25.92,8.22],[2025,26.89,8.56]]]
 };
 
+/* ---------------- BASE: slow-moving reference data, refreshed 27 Jul 2026 ----------------
+   [200-DMA, 50-DMA, sharesOutstanding(B), EPS(ttm)]
+   These move slowly (a 200-day average shifts <0.1%/day), so they're refreshed periodically.
+   The FAST-moving input — price — is fetched live on every load, and everything the screen
+   depends on (% vs 200-DMA, market cap, P/E) is recomputed from that live price. */
+const BASE_DATE="27 Jul 2026";
+const BASE={
+ AAPL:[276.38,306.99,14.69,8.2965], MSFT:[435.45,398.88,7.43,17.2059], GOOGL:[324.32,363.23,12.23,20.4944],
+ AMZN:[234.65,248.51,10.76,8.4514], META:[637.53,605.85,2.54,28.0346], NVDA:[192.99,208.71,24.22,6.3908],
+ AVGO:[365.18,398.76,4.76,6.0974], AMD:[307.15,509.71,1.63,2.9331], ORCL:[186.59,170.18,2.88,6.1653],
+ CRM:[206.23,170.23,0.819,9.0316], ADBE:[278.23,227.89,0.3975,18.2531], NFLX:[92.29,78.35,4.16,3.1793],
+ NOW:[126.31,104.42,1.03,1.6693], VEEV:[206.22,173.84,0.1624,5.6291], PLTR:[154.02,131.57,2.4,0.926],
+ NBIS:[140.32,226.6,0.256,3.1807], TSLA:[414.11,399.92,3.95,1.0756], CRWD:[131.53,178.84,1.02,null],
+ UBER:[79.07,72.1,2.04,4.084], MELI:[1898.89,1704.38,0.0507,38.5606], LLY:[1017.89,1133.05,0.8917,28.0537],
+ UNH:[343.53,407.97,0.9081,15.2876], JNJ:[225.01,242.57,2.41,8.6813], ABBV:[224.15,234.36,1.77,2.0429],
+ MRK:[110.71,121.47,2.47,3.5989], JPM:[310.93,323.52,2.66,23.6148], V:[329.88,337.24,1.88,11.6346],
+ MA:[527.83,508.32,0.8836,17.5554], BAC:[53.32,56.33,7.02,4.3666], XOM:[138.29,146.63,4.14,5.8566],
+ CVX:[174.57,182.82,1.98,5.6697], COST:[957.22,967.94,0.4435,20.0723], WMT:[117.79,117.24,7.96,2.8612],
+ HD:[349.98,328.15,0.9971,14.3074], PG:[148.12,147.02,2.33,6.8878], KO:[75.56,81.36,4.3,3.2038],
+ MCD:[301,275.45,0.7105,12.275]
+};
+/* last-known prices (used only until the live price arrives) */
+const LASTPX={AAPL:315.28,MSFT:391.09,GOOGL:357.6,AMZN:245.1,META:618.5,NVDA:202.46,AVGO:403.32,AMD:545.54,
+ ORCL:144.27,CRM:162.14,ADBE:221.57,NFLX:74.84,NOW:108.4,VEEV:188.59,PLTR:128.51,NBIS:220.7,TSLA:407.03,
+ CRWD:198.16,UBER:74.18,MELI:1800.41,LLY:1212.05,UNH:430.89,JNJ:258.79,ABBV:248.25,MRK:124.96,JPM:334.97,
+ V:346.34,MA:520.49,BAC:59.26,XOM:137.41,CVX:174.12,COST:914.37,WMT:112.04,HD:338.69,PG:146.52,KO:82.445,MCD:276.875};
+
 /* ---------------- state ---------------- */
 let THR={rev:10,ni:5,below:0};
 let Q={}, F={};
@@ -284,11 +313,20 @@ function computeF(fin){
     revYoY:prev.rev?((last.rev-prev.rev)/prev.rev*100):null,
     niPos:last.ni>0, niRising:last.ni>prev.ni};
 }
+/* Build one symbol's row from a price (live if given, else last-known) + BASE reference data */
+function buildRow(sym,name,price,chgP){
+  const b=BASE[sym]; if(!b) return null;
+  const p = (price>0? price : LASTPX[sym]);
+  return {price:p, chgP:(chgP==null?null:chgP), avg50:b[1], avg200:b[0],
+          mcap:(b[2]!=null? p*b[2]*1e9 : null),
+          pe:(b[3]? p/b[3] : null), name:name};
+}
 function loadSnapshot(){
   Q={}; F={};
-  UNIVERSE.forEach(u=>{const d=SNAP[u.s]; if(!d)return;
-    Q[u.s]={price:d[0],chgP:d[1],avg50:d[2],avg200:d[3],mcap:(d[4]!=null?d[4]*1e9:null),pe:d[5],name:u.n};
-    F[u.s]=computeF(d[6]);});
+  UNIVERSE.forEach(u=>{
+    const r=buildRow(u.s,u.n,null,null); if(r) Q[u.s]=r;
+    if(SNAP[u.s]) F[u.s]=computeF(SNAP[u.s][6]);
+  });
   render();
 }
 
@@ -297,38 +335,32 @@ function tfetch(u,ms){const c=new AbortController();const id=setTimeout(()=>c.ab
 function pnum(x){if(x==null)return null;if(typeof x==='number')return x;let t=(''+x).replace(/[,$%\s]/g,'');let m=1;const c=t.slice(-1).toUpperCase();if(c==='T'){m=1e12;t=t.slice(0,-1);}else if(c==='B'){m=1e9;t=t.slice(0,-1);}else if(c==='M'){m=1e6;t=t.slice(0,-1);}const v=parseFloat(t);return isNaN(v)?null:v*m;}
 async function saGet(path){const r=await tfetch('https://stockanalysis.com'+path,11000);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j||!j.data)throw new Error('no data');return j.data;}
 async function loadLive(){
-  setStatus('Fetching live data from stockanalysis.com…');
-  let cache={}; try{cache=JSON.parse(localStorage.getItem('saFund')||'{}');}catch(e){}
-  const now=Date.now(); let ok=0, done=0;
-  for(let i=0;i<UNIVERSE.length;i++){
-    const u=UNIVERSE[i], sym=u.s;
-    try{
-      const q=await saGet('/api/quotes/s/'+sym);
-      const st=await saGet('/api/symbol/s/'+sym+'/statistics');
-      const spd=(st.stockPrice&&st.stockPrice.data)||[];
-      const g=id=>{const o=spd.find(x=>x.id===id);return o?pnum(o.hover||o.value):null;};
-      const sma50=g('sma50'), sma200=g('sma200');
-      let ov=cache[sym];
-      if(!ov || (now-(ov.ts||0)>3*864e5)){
-        const o=await saGet('/api/symbol/s/'+sym+'/overview');
-        ov={shares:pnum(o.sharesOut), eps:pnum(o.eps), pe:pnum(o.peRatio), mcap:pnum(o.marketCap),
-            fin:(o.financialChart||[]).map(r=>[r.year, r.revenue/1e9, r.earnings/1e9]), ts:now};
-        cache[sym]=ov; try{localStorage.setItem('saFund',JSON.stringify(cache));}catch(e){}
-      }
-      const price=q.p;
-      const mcap = ov.shares? price*ov.shares : ov.mcap;
-      const pe   = ov.eps? price/ov.eps : ov.pe;
-      if(price>0 && sma200>0){
-        Q[sym]={price,chgP:q.cp,avg50:sma50,avg200:sma200,mcap,pe,name:u.n};
-        F[sym]=computeF(ov.fin && ov.fin.length? ov.fin : SNAP[sym][6]);
-        ok++;
-      }
-    }catch(e){ /* keep snapshot value already in Q[sym] */ }
-    done++;
-    if(done%4===0){ setStatus('Fetching live… '+done+'/'+UNIVERSE.length); render(); await new Promise(r=>setTimeout(r,110)); }
+  setStatus('Fetching live prices…');
+  let ok=0, done=0;
+  // fetch quotes in small parallel batches (fast: ~1-2s for all 37)
+  const B=6;
+  for(let i=0;i<UNIVERSE.length;i+=B){
+    const batch=UNIVERSE.slice(i,i+B);
+    await Promise.all(batch.map(async u=>{
+      try{
+        const q=await saGet('/api/quotes/s/'+u.s);
+        if(q && q.p>0){
+          const r=buildRow(u.s,u.n,q.p,q.cp);
+          if(r){ Q[u.s]=r; ok++; }
+        }
+      }catch(e){ /* keep last-known row */ }
+      done++;
+    }));
+    setStatus('Fetching live prices… '+done+'/'+UNIVERSE.length);
+    render();
+    await new Promise(r=>setTimeout(r,90));
   }
-  if(ok===0){ setStatus('<span class="down">Live fetch unavailable (offline, or the browser blocked it). Showing snapshot '+SNAP_DATE+'.</span>'); }
-  else{ setStatus('<span class="up">● Live</span> from stockanalysis.com · '+ok+'/'+UNIVERSE.length+' names · updated '+new Date().toLocaleString()); }
+  if(ok===0){
+    setStatus('<span class="down">Live prices unavailable right now (offline or blocked). Showing last-known values.</span>');
+  }else{
+    setStatus('<span class="up">● LIVE</span> · '+ok+'/'+UNIVERSE.length+' live prices · '+new Date().toLocaleTimeString()
+      +' <span style="color:var(--muted)">· 200-DMA/EPS reference '+BASE_DATE+'</span>');
+  }
   render();
 }
 
@@ -390,21 +422,23 @@ function card(u,e,rank){
    +'</div>';
 }
 function renderTable(rows){
-  const cols=[['s','Ticker'],['n','Name'],['price','Price'],['below','vs200DMA'],['rev','RevG%'],['ni','NIG%'],['mcap','MktCap'],['pe','P/E'],['lvl','Screen']];
+  const cols=[['s','Ticker'],['n','Name'],['price','Price'],['dma','200-DMA'],['below','vs200DMA'],['rev','RevG%'],['ni','NIG%'],['mcap','MktCap'],['pe','P/E'],['lvl','Screen']];
   const val={
-    s:r=>r.u.s, n:r=>r.u.n, price:r=>r.e.q.price==null?-1:r.e.q.price, below:r=>r.e.belowPct==null?-999:r.e.belowPct,
+    s:r=>r.u.s, n:r=>r.u.n, price:r=>r.e.q.price==null?-1:r.e.q.price,
+    dma:r=>r.e.q.avg200==null?-1:r.e.q.avg200, below:r=>r.e.belowPct==null?-999:r.e.belowPct,
     rev:r=>r.e.f.revCAGR==null?-999:r.e.f.revCAGR, ni:r=>r.e.f.niCAGR==null?-999:r.e.f.niCAGR, mcap:r=>r.e.q.mcap==null?-1:r.e.q.mcap,
     pe:r=>r.e.q.pe==null?1e9:r.e.q.pe, lvl:r=>r.e.pass?2:(r.e.level==='watch'?1:0), score:r=>r.e.score==null?-1e9:r.e.score
   };
   const sorted=[...rows].sort((a,b)=>{const va=val[sortKey](a),vb=val[sortKey](b);
     if(typeof va==='string')return sortDir*va.localeCompare(vb); return sortDir*(va-vb);});
-  const map={Ticker:'s',Name:'n',Price:'price',vs200DMA:'below','RevG%':'rev','NIG%':'ni',MktCap:'mcap','P/E':'pe',Screen:'lvl'};
+  const map={Ticker:'s',Name:'n',Price:'price','200-DMA':'dma',vs200DMA:'below','RevG%':'rev','NIG%':'ni',MktCap:'mcap','P/E':'pe',Screen:'lvl'};
   let head='<tr>'+cols.map(c=>'<th onclick="setSort(\''+map[c[1]]+'\')">'+c[1]+'</th>').join('')+'</tr>';
   let body=sorted.map(r=>{const e=r.e,q=e.q,f=e.f;
     const d=e.level==='pass'?'dot-g':(e.level==='watch'?'dot-y':'dot-r');
     return '<tr onclick="openModal(\''+r.u.s+'\')"><td><b>'+r.u.s+'</b></td>'
       +'<td style="color:var(--muted)">'+r.u.n+'</td>'
       +'<td>'+money(q.price)+'</td>'
+      +'<td style="color:var(--muted)">'+money(q.avg200)+'</td>'
       +'<td class="'+(e.belowPct>=0?'up':'down')+'">'+belowLabel(e)+'</td>'
       +'<td class="'+clsv(f.revCAGR||0)+'">'+pct(f.revCAGR)+'</td>'
       +'<td class="'+clsv(f.niCAGR||0)+'">'+pct(f.niCAGR)+'</td>'
@@ -477,11 +511,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
 /* ---------------- init ---------------- */
 miniSym('mkt1','SP:SPX');miniSym('mkt2','NASDAQ:NDX');miniSym('mktgold','OANDA:XAUUSD');
-loadSnapshot();   // instant render from embedded data
-loadLive();       // upgrade to live data from stockanalysis.com (no key)
+loadSnapshot();   // instant render from last-known values
+loadLive();       // upgrade to live prices (no key)
+setInterval(loadLive, 120000);   // auto-refresh live prices every 2 minutes
 document.getElementById('disc').innerHTML=
  'Method: a screener over '+UNIVERSE.length+' US mega-caps — growth in USD (revenue &amp; net-income CAGR) plus price trading below its 200-DMA by at least your set amount. '
- +'Price, 50/200-DMA, market cap, P/E &amp; 5-yr financials are fetched live from stockanalysis.com each time the page opens (financials cached ~3 days); if the fetch is blocked it falls back to a snapshot from '+SNAP_DATE+'. Charts, moving-average overlays &amp; technicals are live from TradingView. '
+ +'<b>Prices are fetched live</b> from stockanalysis.com on load and every 2 minutes, and market cap, P/E and the % vs 200-DMA are recomputed from that live price. '
+ +'The slow-moving reference values (200-DMA, 50-DMA, shares outstanding, EPS — a 200-day average shifts well under 0.1%/day) were refreshed '+BASE_DATE+', and annual financials update quarterly. Charts, moving-average overlays &amp; technicals are live from TradingView. '
  +'Foreign ADRs that report in non-USD (e.g. TSMC) are excluded to keep growth comparisons in USD. Ranking/score is illustrative. '
  +'<b>Not investment advice.</b> Verify all figures independently before acting. Generated '
  +new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'.';
