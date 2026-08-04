@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nifty 50 Live Screener — Growth Below the 200-DMA</title>
+<style>
+  :root{--bg:#0b0e14;--panel:#141922;--panel2:#1b2230;--line:#263041;--txt:#e7edf6;
+    --muted:#8b97a8;--accent:#f5b301;--green:#2ec27e;--red:#ff5c6c;--blue:#4c8dff;--purple:#a06bff}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--blue);text-decoration:none}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 18px 70px}
+  header.top{padding:24px 0 8px}
+  .kicker{color:var(--accent);font-weight:700;letter-spacing:.14em;font-size:12px;text-transform:uppercase}
+  h1{margin:6px 0 4px;font-size:29px;line-height:1.15}
+  .sub{color:var(--muted);font-size:14px;max-width:920px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .thesis{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin:16px 0 6px}
+  @media(max-width:860px){.thesis{grid-template-columns:1fr}}
+  .card h3{margin:0 0 8px;font-size:15px}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;margin:2px 4px 2px 0}
+  .p-us{background:rgba(76,141,255,.16);color:#8fb6ff}
+  .p-gold{background:rgba(245,179,1,.16);color:var(--accent)}
+  .p-dip{background:rgba(46,194,126,.14);color:#93e6c0}
+  .thesislist{margin:8px 0 0;padding-left:18px;color:#cfd8e6;font-size:13px;line-height:1.65}
+  .goldbox{background:linear-gradient(160deg,#1d1a10,#141922);border:1px solid #3a3115}
+  .verdict{font-size:13px;color:#e9dfc4;line-height:1.65;margin:0;padding-left:18px}
+  .section-t{display:flex;align-items:baseline;gap:12px;margin:28px 0 12px;flex-wrap:wrap}
+  .section-t h2{font-size:20px;margin:0}
+  .section-t span{color:var(--muted);font-size:13px}
+  .keybar{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:8px 0 6px}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer}
+  .btn:hover{border-color:#41506b}
+  .gates{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+  .gate{font-size:12.5px;color:#cfd8e6}
+  .gate input[type=range]{accent-color:var(--accent);vertical-align:middle}
+  .gate b{color:var(--accent)}
+  .legend{font-size:11.5px;color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;vertical-align:middle}
+  .dot-g{background:var(--green)}.dot-y{background:var(--accent)}.dot-r{background:var(--red)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:14px}
+  .stock{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+  .stock:hover{transform:translateY(-3px);border-color:#41506b;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .rank{position:absolute;top:10px;right:12px;font-size:13px;color:var(--accent);font-weight:800}
+  .tk{font-size:17px;font-weight:800}
+  .nm{color:var(--muted);font-size:12px;margin:1px 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cardmini{height:96px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0f131b;margin:2px 0 8px}
+  .kv{display:flex;justify-content:space-between;font-size:12px;margin:2px 0;color:#c4cede}
+  .kv span:first-child{color:var(--muted)}
+  .badge{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;display:inline-flex;gap:5px;align-items:center;margin-top:8px}
+  .b-pass{background:rgba(46,194,126,.15);color:var(--green)}
+  .b-watch{background:rgba(245,179,1,.15);color:var(--accent)}
+  .b-fail{background:rgba(255,92,108,.14);color:#ff9aa4}
+  .salink{display:inline-block;margin-top:8px;font-size:11px;color:var(--blue)}
+  .salink:hover{text-decoration:underline}
+  table.uni{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  table.uni th,table.uni td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+  table.uni th:first-child,table.uni td:first-child,table.uni th:nth-child(2),table.uni td:nth-child(2){text-align:left}
+  table.uni thead th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;cursor:pointer;user-select:none}
+  table.uni tbody tr{cursor:pointer}
+  table.uni tbody tr:hover{background:var(--panel2)}
+  .up{color:var(--green)}.down{color:var(--red)}
+  .overlay{position:fixed;inset:0;background:rgba(4,6,10,.72);backdrop-filter:blur(3px);display:none;z-index:50;padding:24px;overflow-y:auto}
+  .overlay.open{display:block}
+  .modal{max-width:1080px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px 28px}
+  .modal .x{float:right;font-size:22px;color:var(--muted);cursor:pointer;line-height:1;padding:2px 6px}
+  .m-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .m-head .tk{font-size:24px}
+  .m-sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+  .m-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-top:16px}
+  @media(max-width:880px){.m-grid{grid-template-columns:1fr}}
+  .chartbox{background:#0f131b;border:1px solid var(--line);border-radius:12px;height:420px;overflow:hidden}
+  .side .card{margin-bottom:14px}
+  table.fin{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.fin th,table.fin td{padding:7px 6px;text-align:right;border-bottom:1px solid var(--line)}
+  table.fin th:first-child,table.fin td:first-child{text-align:left;color:var(--muted)}
+  table.fin thead th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase}
+  .growth3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .gcell{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+  .gcell .l{font-size:10px;color:var(--muted);text-transform:uppercase}
+  .gcell .v{font-size:15px;font-weight:800;margin-top:2px}
+  .scr-gate{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+  .scr-gate .g{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px}
+  .scr-gate .g .l{font-size:10px;color:var(--muted);text-transform:uppercase}
+  .scr-gate .g .v{font-size:13px;font-weight:700;margin-top:2px}
+  .tvmini{height:150px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0f131b}
+  .goldgrid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+  @media(max-width:860px){.goldgrid{grid-template-columns:1fr}}
+  .disc{margin-top:26px;font-size:11.5px;color:var(--muted);line-height:1.7;border-top:1px solid var(--line);padding-top:16px}
+  .loadnote{font-size:11px;color:var(--muted)}
+  .empty{color:var(--muted);font-size:13.5px;padding:18px;text-align:center;border:1px dashed var(--line);border-radius:12px}
+  .navlink{display:inline-block;margin-top:10px;font-size:12.5px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+</style>
+</head>
+<body>
+<div class="tradingview-widget-container" style="border-bottom:1px solid var(--line)">
+  <div class="tradingview-widget-container__widget"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+  {"symbols":[
+    {"description":"NIFTY 50","proxy":"NSE:NIFTY"},
+    {"description":"BANK NIFTY","proxy":"NSE:BANKNIFTY"},
+    {"description":"SENSEX","proxy":"BSE:SENSEX"},
+    {"description":"USD/INR","proxy":"FX_IDC:USDINR"},
+    {"description":"Gold","proxy":"OANDA:XAUUSD"},
+    {"description":"Reliance","proxy":"NSE:RELIANCE"},
+    {"description":"HDFC Bank","proxy":"NSE:HDFCBANK"},
+    {"description":"TCS","proxy":"NSE:TCS"},
+    {"description":"Infosys","proxy":"NSE:INFY"},
+    {"description":"ICICI Bank","proxy":"NSE:ICICIBANK"},
+    {"description":"Bharti Airtel","proxy":"NSE:BHARTIARTL"}
+  ],"showSymbolLogo":true,"isTransparent":true,"displayMode":"adaptive","colorTheme":"dark","locale":"en"}
+  </script>
+</div>
+
+<div class="wrap">
+<header class="top">
+  <div class="kicker">Nifty 50 Screener · Growth + 200-DMA · Live</div>
+  <h1>Nifty 50 Live Screener — Growth Below the 200-DMA</h1>
+  <p class="sub">A screener over the Nifty 50. It computes the top 10 — not a fixed list — that pass a two-part gate:
+  (1) revenue &amp; net-profit growth above your minimum rates, and (2) price trading <b>below</b> its 200-day average by at
+  least the amount you set (a pullback vs the long-term trend). <b>Prices refresh live</b> from stockanalysis.com on load and every
+  2 minutes — no key, no login — and the % vs 200-DMA, market cap and P/E recompute from that live price, so the top 10 re-ranks
+  as the market moves. Click any name for its chart, technicals and financials.</p>
+  <a class="navlink" href="./index.html">← US mega-cap screener</a>
+</header>
+
+<div class="thesis">
+  <div class="card">
+    <h3>How the screen works</h3>
+    <span class="pill p-us">Growth (₹)</span>
+    <span class="pill p-dip">Below the 200-DMA</span>
+    <span class="pill p-gold">Gold panel</span>
+    <ul class="thesislist">
+      <li><b>Filter 1 — growth.</b> Revenue and net profit (PAT) must each compound above the minimum per-annum rate you choose, measured FY2022 → FY2026.</li>
+      <li><b>Filter 2 — entry.</b> Price must sit <b>at least X% below</b> its 200-day average — on a pullback vs its long-term trend, rather than extended above it.</li>
+      <li><b>Ranked by growth</b> (revenue + PAT CAGR). Move the sliders and the top 10 rebuilds instantly.</li>
+      <li><b>Universe:</b> Nifty 50 constituents. Indian fiscal years run April–March, so FY2026 = year ended March 2026.</li>
+    </ul>
+  </div>
+  <div class="card goldbox">
+    <h3><span class="pill p-gold">GOLD</span></h3>
+    <ul class="verdict">
+      <li>Widely held in India as a portfolio hedge and long-term store of value.</li>
+      <li>Used to diversify against currency depreciation and equity drawdowns.</li>
+      <li>Live spot gold and USD/INR are in the ticker above; gold chart below.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="keybar">
+  <div class="gates">
+    <span class="gate">Min revenue growth (p.a.): <input type="range" id="thrRev" min="0" max="30" step="1" value="10" oninput="setThr()"> <b id="thrRevV">10</b>%</span>
+    <span class="gate">Min net-profit growth (p.a.): <input type="range" id="thrNi" min="0" max="30" step="1" value="5" oninput="setThr()"> <b id="thrNiV">5</b>%</span>
+    <span class="gate">Min % below 200-DMA: <input type="range" id="thrBelow" min="0" max="40" step="1" value="0" oninput="setThr()"> <b id="thrBelowV">0</b>%</span>
+  </div>
+  <div class="gates" style="margin-top:8px">
+    <button class="btn" onclick="loadLive()">↻ Refresh live</button>
+    <span class="legend"><span class="dot dot-g"></span> Passes both gates &nbsp; <span class="dot dot-y"></span> Passes one &nbsp; <span class="dot dot-r"></span> Fails</span>
+    <span class="legend" id="statusline"></span>
+  </div>
+</div>
+
+<div class="section-t"><h2>Top 10 — passing the gate</h2><span id="top10note"></span></div>
+<div id="top10"><div class="empty" id="emptyTop">Loading…</div></div>
+
+<div class="section-t"><h2>Full Nifty 50 scan</h2><span><span style="color:var(--green)">● Price is live</span> (auto-refreshes every 2 min) · click any row for chart, technicals &amp; financials · click a header to sort</span></div>
+<div class="card" style="padding:6px 10px"><div id="unitable"></div></div>
+
+<div class="section-t"><h2>Live Market &amp; Gold</h2><span>Nifty 50 · Bank Nifty · Spot Gold — live</span></div>
+<div class="goldgrid">
+  <div class="card">
+    <div class="tvmini" id="mkt1"></div>
+    <div class="tvmini" id="mkt2" style="margin-top:12px"></div>
+  </div>
+  <div class="card goldbox"><div class="tvmini" id="mktgold" style="height:312px"></div></div>
+</div>
+
+<div class="disc" id="disc"></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal"></div></div>
+
+<script>
+/* ---------------- Nifty 50 universe ---------------- */
+const UNIVERSE=[
+ {s:"ADANIENT",n:"Adani Enterprises",sec:"Conglomerate"},
+ {s:"ADANIPORTS",n:"Adani Ports & SEZ",sec:"Infrastructure"},
+ {s:"APOLLOHOSP",n:"Apollo Hospitals",sec:"Healthcare"},
+ {s:"ASIANPAINT",n:"Asian Paints",sec:"Consumer"},
+ {s:"AXISBANK",n:"Axis Bank",sec:"Banking"},
+ {s:"BAJAJ_AUTO",n:"Bajaj Auto",sec:"Auto"},
+ {s:"BAJFINANCE",n:"Bajaj Finance",sec:"NBFC"},
+ {s:"BAJAJFINSV",n:"Bajaj Finserv",sec:"Financials"},
+ {s:"BEL",n:"Bharat Electronics",sec:"Defence"},
+ {s:"BHARTIARTL",n:"Bharti Airtel",sec:"Telecom"},
+ {s:"CIPLA",n:"Cipla",sec:"Pharma"},
+ {s:"COALINDIA",n:"Coal India",sec:"Mining"},
+ {s:"DRREDDY",n:"Dr Reddy's Labs",sec:"Pharma"},
+ {s:"EICHERMOT",n:"Eicher Motors",sec:"Auto"},
+ {s:"ETERNAL",n:"Eternal (Zomato)",sec:"Internet"},
+ {s:"GRASIM",n:"Grasim Industries",sec:"Cement/Textiles"},
+ {s:"HCLTECH",n:"HCL Technologies",sec:"IT"},
+ {s:"HDFCBANK",n:"HDFC Bank",sec:"Banking"},
+ {s:"HDFCLIFE",n:"HDFC Life Insurance",sec:"Insurance"},
+ {s:"HINDALCO",n:"Hindalco Industries",sec:"Metals"},
+ {s:"HINDUNILVR",n:"Hindustan Unilever",sec:"FMCG"},
+ {s:"ICICIBANK",n:"ICICI Bank",sec:"Banking"},
+ {s:"INFY",n:"Infosys",sec:"IT",fx:"USD"},
+ {s:"INDIGO",n:"InterGlobe Aviation",sec:"Aviation"},
+ {s:"ITC",n:"ITC",sec:"FMCG"},
+ {s:"JIOFIN",n:"Jio Financial Services",sec:"Financials"},
+ {s:"JSWSTEEL",n:"JSW Steel",sec:"Metals"},
+ {s:"KOTAKBANK",n:"Kotak Mahindra Bank",sec:"Banking"},
+ {s:"LT",n:"Larsen & Toubro",sec:"Infrastructure"},
+ {s:"M_M",n:"Mahindra & Mahindra",sec:"Auto"},
+ {s:"MARUTI",n:"Maruti Suzuki",sec:"Auto"},
+ {s:"MAXHEALTH",n:"Max Healthcare",sec:"Healthcare"},
+ {s:"NTPC",n:"NTPC",sec:"Power"},
+ {s:"ONGC",n:"ONGC",sec:"Oil & Gas"},
+ {s:"POWERGRID",n:"Power Grid Corp",sec:"Power"},
+ {s:"RELIANCE",n:"Reliance Industries",sec:"Conglomerate"},
+ {s:"SBILIFE",n:"SBI Life Insurance",sec:"Insurance"},
+ {s:"SHRIRAMFIN",n:"Shriram Finance",sec:"NBFC"},
+ {s:"SBIN",n:"State Bank of India",sec:"Banking"},
+ {s:"SUNPHARMA",n:"Sun Pharmaceutical",sec:"Pharma"},
+ {s:"TCS",n:"Tata Consultancy Svcs",sec:"IT"},
+ {s:"TATACONSUM",n:"Tata Consumer Products",sec:"FMCG"},
+ {s:"TMPV",n:"Tata Motors Pass. Veh.",sec:"Auto"},
+ {s:"TATASTEEL",n:"Tata Steel",sec:"Metals"},
+ {s:"TECHM",n:"Tech Mahindra",sec:"IT"},
+ {s:"TITAN",n:"Titan Company",sec:"Consumer"},
+ {s:"TRENT",n:"Trent",sec:"Retail"},
+ {s:"ULTRACEMCO",n:"UltraTech Cement",sec:"Cement"},
+ {s:"WIPRO",n:"Wipro",sec:"IT"}
+];
+
+/* ---------------- BASE reference (stockanalysis.com, 4 Aug 2026) ----------------
+   [200-DMA, 50-DMA, marketCap ₹B @refPrice, PE @refPrice, refPrice ₹]
+   Market cap & P/E come straight from the statistics page and are scaled by live price ÷ refPrice. */
+const BASE_DATE="4 Aug 2026";
+const BASE={
+ ADANIENT:[2449.41,3040.75,4150,57.75,3023.7], ADANIPORTS:[1577.54,1803.82,3930,29.09,1692.7],
+ APOLLOHOSP:[7767.19,8636,1270,65.36,8883.5], ASIANPAINT:[2590.79,2696.45,2660,55.85,2747],
+ AXISBANK:[1285.6,1303.69,3900,14.03,1248], BAJAJ_AUTO:[9664.04,10406.45,3190,27.58,11600],
+ BAJFINANCE:[973.76,988.56,7170,35.41,1143.8], BAJAJFINSV:[1917.05,1825.79,3350,33.17,2082],
+ BEL:[420.12,409.77,2840,46.19,389.95], BHARTIARTL:[1952.33,1883.69,11920,44.64,1955.1],
+ CIPLA:[1407.2,1420.44,1190,35.36,1451.6], COALINDIA:[426.14,441.01,2560,8.23,414.7],
+ DRREDDY:[1260.44,1263.47,974.5,29.44,1160.9], EICHERMOT:[7252.29,7457.23,2200,38.04,7908],
+ ETERNAL:[274.7,272.37,2850,659.28,310.65], GRASIM:[2882.04,3132.41,2210,44.58,3122],
+ HCLTECH:[1413.87,1184.28,3710,20.7,1357], HDFCBANK:[872.95,776.19,11600,14.71,739],
+ HDFCLIFE:[666.98,570.91,1200,60.39,534.15], HINDALCO:[935.88,1005.38,2200,16.41,1017.8],
+ HINDUNILVR:[2282.25,2147.59,4930,54.86,2081], ICICIBANK:[1349.83,1366.43,10440,18.81,1440],
+ INFY:[1352.83,1108.82,4780,15.4,1158], INDIGO:[4949.94,5005.73,2090,null,5318.5],
+ ITC:[332.2,285.61,3600,18.12,286.4], JIOFIN:[263.23,239.66,1750,80.18,264.6],
+ JSWSTEEL:[1209.24,1262.73,3120,12.61,1290.5], KOTAKBANK:[403.55,389.27,3910,19.26,394.75],
+ LT:[3967.54,3986.79,5500,33.17,4001], M_M:[3364.4,3130.55,3840,20.89,3412],
+ MARUTI:[14588.17,13613.42,4450,31.04,14099], MAXHEALTH:[1058.77,1066.94,1060,73.55,1066.1],
+ NTPC:[357.18,356.71,3330,12,341.95], ONGC:[259.11,249.67,3040,7.35,241.9],
+ POWERGRID:[286.08,286.78,2670,16.76,282], RELIANCE:[1408.74,1303.42,17470,23.38,1290.9],
+ SBILIFE:[1923.69,1814.68,1920,73.91,1871], SHRIRAMFIN:[949.57,1003.85,2520,22.25,1080.5],
+ SBIN:[1025.06,1017.11,9650,11.46,1034], SUNPHARMA:[1776.16,1880.97,4710,38.97,1958.7],
+ TCS:[2688.98,2206.07,8900,17.87,2443.8], TATACONSUM:[1140.83,1113.45,1080,66.12,1084.5],
+ TMPV:[360.31,356.88,1270,1.54,345.1], TATASTEEL:[191.31,194.34,2360,21.39,190],
+ TECHM:[1496.67,1495.22,1460,28.52,1643.1], TITAN:[4160.52,4443.72,4350,85.75,4891.5],
+ TRENT:[2800.08,2970.04,1620,94.11,3077], ULTRACEMCO:[11810.67,11518.94,3540,41.53,11984],
+ WIPRO:[216.54,182.8,1850,13.99,187.65]
+};
+
+/* ---------------- Financials: FY2022..FY2026, ₹ billion [rev,PAT] pairs ----------------
+   From stockanalysis.com. INFY & HCLTECH report in USD there; converted at USD/INR 95.40. */
+const FIN={
+ ADANIENT:[694.2,7.8,1275.4,24.7,964.2,31.1,979.0,69.4,1004.7,92.3],
+ ADANIPORTS:[171.2,48.9,208.5,53.1,267.1,81.1,304.8,110.9,387.4,128.1],
+ APOLLOHOSP:[146.6,10.6,166.1,8.2,190.6,9.0,217.9,14.5,252.3,19.4],
+ ASIANPAINT:[289.8,30.3,344.3,41.1,354.4,54.6,339.1,36.7,355.8,43.3],
+ AXISBANK:[389.9,141.2,591.7,108.2,724.3,263.9,772.4,280.6,745.5,263.9],
+ BAJAJ_AUTO:[342.9,61.7,373.3,60.6,461.6,77.1,518.6,73.3,636.3,107.4],
+ BAJFINANCE:[170.9,70.3,256.7,115.1,316.7,144.5,370.0,166.4,439.4,190.2],
+ BAJAJFINSV:[671.4,45.6,808.4,64.2,1091.2,81.5,1323.3,88.7,1500.0,98.0],
+ BEL:[153.7,24.0,177.3,29.8,202.7,39.8,237.7,53.2,276.1,60.6],
+ BHARTIARTL:[1165.5,42.5,1391.5,83.5,1499.8,74.7,1729.8,335.6,2109.7,266.9],
+ CIPLA:[217.1,25.2,225.6,28.0,255.4,41.2,272.7,52.7,278.3,38.8],
+ COALINDIA:[1097.2,173.6,1321.1,317.6,1352.7,374.0,1328.0,353.6,1684.0,310.9],
+ DRREDDY:[214.4,23.6,245.9,45.1,279.2,55.7,325.5,56.5,335.9,42.9],
+ EICHERMOT:[102.0,16.8,147.2,29.1,164.3,40.0,187.3,47.3,232.8,55.1],
+ ETERNAL:[41.9,-12.1,70.8,-9.7,121.1,3.5,202.4,5.3,543.6,3.7],
+ GRASIM:[957.0,75.5,1176.3,68.3,1309.8,56.2,1484.8,37.1,1754.3,49.7],
+ HCLTECH:[1095.2,172.7,1201.1,175.5,1266.0,181.3,1320.4,194.6,1398.6,179.4],
+ HDFCBANK:[911.9,380.5,1130.3,460.0,2288.4,640.6,2728.5,707.9,2833.2,760.3],
+ HDFCLIFE:[676.3,13.3,707.7,13.7,1019.6,15.7,971.9,18.1,998.6,19.1],
+ HINDALCO:[1950.6,137.3,2232.0,101.0,2159.6,101.5,2385.0,160.0,2749.4,133.9],
+ HINDUNILVR:[524.5,88.8,605.8,101.2,619.0,102.8,613.3,106.5,644.7,150.4],
+ ICICIBANK:[989.4,251.1,1169.0,340.4,1427.9,442.6,1822.2,510.3,1980.7,542.1],
+ INFY:[1556.0,282.4,1737.3,284.3,1770.6,302.4,1839.3,301.5,1923.3,315.8],
+ INDIGO:[259.3,-61.6,544.5,-3.1,689.0,81.7,808.0,72.6,849.6,-23.9],
+ ITC:[606.7,152.4,709.4,191.9,679.3,204.6,753.2,347.5,788.7,206.9],
+ JIOFIN:[1.8,1.7,0.5,0.3,18.4,16.1,20.3,16.1,27.0,15.6],
+ JSWSTEEL:[1463.7,206.7,1659.6,41.4,1750.1,88.1,1688.2,35.0,1854.7,223.2],
+ KOTAKBANK:[455.2,120.5,531.2,148.8,696.1,181.8,676.8,221.3,675.5,192.9],
+ LT:[1587.5,86.7,1861.9,104.7,2251.9,130.6,2598.1,150.4,2916.2,160.8],
+ M_M:[909.5,65.8,1222.8,102.8,1409.3,112.7,1608.7,129.3,2018.0,171.0],
+ MARUTI:[883.3,38.8,1184.1,82.6,1418.6,134.9,1529.1,145.0,1833.2,146.8],
+ MAXHEALTH:[39.4,6.0,45.6,11.0,54.1,10.6,70.3,10.8,83.7,14.4],
+ NTPC:[1326.7,166.8,1762.1,169.1,1785.3,208.1,1881.4,234.2,1873.8,270.5],
+ ONGC:[4913.0,455.2,6323.3,367.1,6015.8,491.4,6630.6,362.3,6622.5,414.2],
+ POWERGRID:[416.2,168.2,456.0,154.2,458.4,155.7,457.9,155.2,467.3,159.3],
+ RELIANCE:[6959.6,607.0,8778.4,667.0,9010.6,696.2,9646.9,696.5,10572.2,807.8],
+ SBILIFE:[829.2,15.1,806.4,17.2,1320.5,18.9,1182.6,24.1,1142.3,24.7],
+ SHRIRAMFIN:[61.0,27.2,133.7,60.1,154.4,73.7,176.2,95.5,207.3,100.2],
+ SBIN:[2241.0,353.7,2652.1,556.5,3271.3,670.9,3429.4,775.6,3766.8,833.0],
+ SUNPHARMA:[386.6,32.7,438.9,84.7,485.0,95.8,525.8,109.3,584.6,114.8],
+ TCS:[1917.5,383.3,2254.6,421.5,2408.9,459.1,2553.2,485.5,2670.2,492.1],
+ TATACONSUM:[124.3,9.4,137.8,12.0,152.1,11.5,176.2,12.8,202.9,15.4],
+ TMPV:[2784.5,-114.4,3459.7,24.1,4340.2,314.0,3692.0,278.3,3392.2,823.9],
+ TATASTEEL:[2439.6,401.5,2433.5,87.6,2291.7,-44.4,2185.4,34.2,2321.4,107.9],
+ TECHM:[446.5,55.7,532.9,48.3,520.0,23.6,529.9,42.5,568.1,48.1],
+ TITAN:[288.0,21.7,405.8,32.5,510.8,35.0,604.6,33.4,875.8,50.7],
+ TRENT:[45.0,1.1,82.4,4.5,123.8,14.9,171.3,15.5,200.7,17.2],
+ ULTRACEMCO:[526.0,73.4,632.4,50.6,709.1,70.0,759.5,60.4,885.1,81.7],
+ WIPRO:[790.9,122.2,904.9,113.5,897.6,110.5,890.9,131.3,926.2,132.0]
+};
+const FY=[2022,2023,2024,2025,2026];
+
+/* ---------------- state ---------------- */
+let THR={rev:10,ni:5,below:0};
+let Q={}, F={};
+let sortKey='score', sortDir=-1;
+
+/* ---------------- helpers ---------------- */
+const cagr=(a,b,y)=>(a==null||b==null||a<=0||b<=0||y<=0)?null:(Math.pow(b/a,1/y)-1)*100;
+const pct=x=>(x==null||isNaN(x))?'n/a':((x>=0?'+':'')+x.toFixed(1)+'%');
+const clsv=x=>x>=0?'up':'down';
+/* ₹ billion -> readable Indian format (1 bn = 100 Cr; 1 L Cr = 1000 bn) */
+function fmtINR(bn){
+  if(bn==null||isNaN(bn))return 'n/a';
+  const neg=bn<0, v=Math.abs(bn);
+  const s = v>=1000 ? '₹'+(v/1000).toFixed(2)+' L Cr'
+                    : '₹'+Math.round(v*100).toLocaleString('en-IN')+' Cr';
+  return (neg?'-':'')+s;
+}
+function money(x){return x==null?'—':'₹'+Number(x).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function setStatus(t){var el=document.getElementById('statusline');if(el)el.innerHTML=t;}
+
+function computeF(sym){
+  const a=FIN[sym]; if(!a) return {};
+  const yrs=FY.map((y,i)=>({y:'FY'+y, rev:a[i*2]*1e9, ni:a[i*2+1]*1e9}));
+  const n=yrs.length,first=yrs[0],last=yrs[n-1],prev=yrs[n-2];
+  return {yrs, revCAGR:cagr(first.rev,last.rev,n-1), niCAGR:cagr(first.ni,last.ni,n-1),
+    revYoY:prev.rev?((last.rev-prev.rev)/prev.rev*100):null,
+    niPos:last.ni>0, niRising:last.ni>prev.ni};
+}
+function buildRow(sym,name,price,chgP){
+  const b=BASE[sym]; if(!b) return null;
+  const ref=b[4], p=(price>0?price:ref), k=(ref>0?p/ref:1);
+  return {price:p, chgP:(chgP==null?null:chgP), avg50:b[1], avg200:b[0],
+          mcap:(b[2]!=null? b[2]*k : null),      // ₹ billion
+          pe:(b[3]!=null? b[3]*k : null), name:name};
+}
+function loadSnapshot(){
+  Q={};F={};
+  UNIVERSE.forEach(u=>{const r=buildRow(u.s,u.n,null,null); if(r)Q[u.s]=r; F[u.s]=computeF(u.s);});
+  render();
+}
+
+/* ---------------- LIVE prices (stockanalysis NSE endpoint, no key) ---------------- */
+function tfetch(u,ms){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms||12000);return fetch(u,{cache:'no-store',signal:c.signal}).finally(()=>clearTimeout(id));}
+async function saQuote(sym){
+  const r=await tfetch('https://stockanalysis.com/api/quotes/a/NSE-'+encodeURIComponent(sym),11000);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const j=await r.json(); if(!j||!j.data) throw new Error('no data');
+  return j.data;
+}
+async function loadLive(){
+  setStatus('Fetching live prices…');
+  let ok=0,done=0;const B=6;
+  for(let i=0;i<UNIVERSE.length;i+=B){
+    await Promise.all(UNIVERSE.slice(i,i+B).map(async u=>{
+      try{const d=await saQuote(u.s);
+        if(d&&d.p>0){const r=buildRow(u.s,u.n,d.p,d.cp); if(r){Q[u.s]=r;ok++;}}
+      }catch(e){}
+      done++;
+    }));
+    setStatus('Fetching live prices… '+done+'/'+UNIVERSE.length);
+    render();
+    await new Promise(r=>setTimeout(r,90));
+  }
+  if(ok===0) setStatus('<span class="down">Live prices unavailable right now. Showing last-known values.</span>');
+  else setStatus('<span class="up">● LIVE</span> · '+ok+'/'+UNIVERSE.length+' live prices · '+new Date().toLocaleTimeString()
+    +' <span style="color:var(--muted)">· 200-DMA reference '+BASE_DATE+'</span>');
+  render();
+}
+
+/* ---------------- gate ---------------- */
+function evaluate(u){
+  const q=Q[u.s]||{}, f=F[u.s]||{};
+  const revOK=f.revCAGR!=null&&f.revCAGR>=THR.rev;
+  const niGrowthOK=f.niPos&&f.niRising&&(f.niCAGR==null||f.niCAGR>=THR.ni);
+  const growthOK=revOK&&niGrowthOK;
+  const extPct=(q.avg200>0)?(q.price/q.avg200-1)*100:null;
+  const belowPct=extPct==null?null:-extPct;
+  const priceOK=belowPct!=null&&belowPct>=THR.below;
+  const pass=growthOK&&priceOK;
+  const level=pass?'pass':((growthOK||priceOK)?'watch':'fail');
+  const score=(f.revCAGR||0)+(f.niCAGR||0)*0.6;
+  return {q,f,revOK,niGrowthOK,growthOK,extPct,belowPct,priceOK,pass,level,score};
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  const rows=UNIVERSE.map(u=>({u,e:evaluate(u)}));
+  const passers=rows.filter(r=>r.e.pass).sort((a,b)=>b.e.score-a.e.score);
+  const top=passers.slice(0,10);
+  const note=document.getElementById('top10note'), t10=document.getElementById('top10');
+  if(!top.length){
+    t10.className='';
+    t10.innerHTML='<div class="empty">No stock passes both gates at these settings ('+passers.length+' pass). Loosen the sliders — lower the growth minimums, or reduce the “min % below 200-DMA”.</div>';
+    note.textContent='';
+  }else{
+    note.textContent=passers.length+' of '+UNIVERSE.length+' names pass · showing top '+top.length+' by growth score';
+    t10.className='grid';
+    t10.innerHTML=top.map((r,i)=>card(r.u,r.e,i+1)).join('');
+    top.forEach(r=>miniSym('mini-'+r.u.s,'NSE:'+r.u.s));
+  }
+  renderTable(rows);
+}
+function badge(e){
+  const c=e.level==='pass'?'b-pass':(e.level==='watch'?'b-watch':'b-fail');
+  const d=e.level==='pass'?'dot-g':(e.level==='watch'?'dot-y':'dot-r');
+  const t=e.level==='pass'?'PASSES GATE':(e.level==='watch'?(e.growthOK?'growth ✓ / entry ✗':'entry ✓ / growth ✗'):'FAILS');
+  return '<span class="badge '+c+'"><span class="dot '+d+'"></span>'+t+'</span>';
+}
+function belowLabel(e){
+  if(e.belowPct==null)return 'n/a';
+  return e.belowPct>=0? e.belowPct.toFixed(1)+'% below' : Math.abs(e.belowPct).toFixed(1)+'% above';
+}
+function card(u,e,rank){
+  const q=e.q,f=e.f;
+  return '<div class="stock" onclick="openModal(\''+u.s+'\')">'
+   +'<div class="rank">#'+rank+'</div><div class="tk">'+u.s.replace('_','&')+'</div><div class="nm">'+u.n+'</div>'
+   +'<div class="cardmini" id="mini-'+u.s+'"></div>'
+   +'<div class="kv"><span>Price</span><span>'+money(q.price)+' <span class="'+(q.chgP>=0?'up':'down')+'">'+(q.chgP!=null?(q.chgP>=0?'▲':'▼')+Math.abs(q.chgP).toFixed(2)+'%':'')+'</span></span></div>'
+   +'<div class="kv"><span>vs 200-DMA</span><span class="'+(e.belowPct>=0?'up':'down')+'">'+belowLabel(e)+'</span></div>'
+   +'<div class="kv"><span>Rev / PAT growth p.a.</span><span>'+pct(f.revCAGR)+' / '+pct(f.niCAGR)+'</span></div>'
+   +'<div class="kv"><span>Mkt cap · P/E</span><span>'+fmtINR(q.mcap)+' · '+(q.pe?q.pe.toFixed(1):'—')+'</span></div>'
+   +badge(e)
+   +'<br><a class="salink" href="https://stockanalysis.com/quote/nse/'+u.s+'/statistics/" target="_blank" rel="noopener" onclick="event.stopPropagation()">live 200-DMA &amp; stats ↗</a>'
+   +'</div>';
+}
+function renderTable(rows){
+  const cols=[['s','Ticker'],['n','Name'],['price','Price'],['dma','200-DMA'],['below','vs200DMA'],['rev','RevG%'],['ni','PATG%'],['mcap','MktCap'],['pe','P/E'],['lvl','Screen']];
+  const val={s:r=>r.u.s,n:r=>r.u.n,price:r=>r.e.q.price==null?-1:r.e.q.price,
+    dma:r=>r.e.q.avg200==null?-1:r.e.q.avg200, below:r=>r.e.belowPct==null?-999:r.e.belowPct,
+    rev:r=>r.e.f.revCAGR==null?-999:r.e.f.revCAGR, ni:r=>r.e.f.niCAGR==null?-999:r.e.f.niCAGR,
+    mcap:r=>r.e.q.mcap==null?-1:r.e.q.mcap, pe:r=>r.e.q.pe==null?1e9:r.e.q.pe,
+    lvl:r=>r.e.pass?2:(r.e.level==='watch'?1:0), score:r=>r.e.score==null?-1e9:r.e.score};
+  const sorted=[...rows].sort((a,b)=>{const va=val[sortKey](a),vb=val[sortKey](b);
+    if(typeof va==='string')return sortDir*va.localeCompare(vb);return sortDir*(va-vb);});
+  const map={Ticker:'s',Name:'n',Price:'price','200-DMA':'dma',vs200DMA:'below','RevG%':'rev','PATG%':'ni',MktCap:'mcap','P/E':'pe',Screen:'lvl'};
+  const head='<tr>'+cols.map(c=>'<th onclick="setSort(\''+map[c[1]]+'\')">'+c[1]+'</th>').join('')+'</tr>';
+  const body=sorted.map(r=>{const e=r.e,q=e.q,f=e.f;
+    const d=e.level==='pass'?'dot-g':(e.level==='watch'?'dot-y':'dot-r');
+    return '<tr onclick="openModal(\''+r.u.s+'\')"><td><b>'+r.u.s.replace('_','&')+'</b></td>'
+      +'<td style="color:var(--muted)">'+r.u.n+'</td>'
+      +'<td>'+money(q.price)+'</td>'
+      +'<td style="color:var(--muted)">'+money(q.avg200)+'</td>'
+      +'<td class="'+(e.belowPct>=0?'up':'down')+'">'+belowLabel(e)+'</td>'
+      +'<td class="'+clsv(f.revCAGR||0)+'">'+pct(f.revCAGR)+'</td>'
+      +'<td class="'+clsv(f.niCAGR||0)+'">'+pct(f.niCAGR)+'</td>'
+      +'<td>'+fmtINR(q.mcap)+'</td>'
+      +'<td>'+(q.pe?q.pe.toFixed(1):'—')+'</td>'
+      +'<td><span class="dot '+d+'"></span></td></tr>';}).join('');
+  document.getElementById('unitable').innerHTML='<table class="uni"><thead>'+head+'</thead><tbody>'+body+'</tbody></table>';
+}
+
+/* ---------------- controls ---------------- */
+function setThr(){THR.rev=+document.getElementById('thrRev').value;THR.ni=+document.getElementById('thrNi').value;THR.below=+document.getElementById('thrBelow').value;
+  document.getElementById('thrRevV').textContent=THR.rev;document.getElementById('thrNiV').textContent=THR.ni;document.getElementById('thrBelowV').textContent=THR.below;
+  render();}
+function setSort(k){if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=(k==='s'||k==='n')?1:-1;}render();}
+
+/* ---------------- TradingView ---------------- */
+function tvWidget(c,src,cfg){c.innerHTML='';const w=document.createElement('div');w.className='tradingview-widget-container';
+  const i=document.createElement('div');i.className='tradingview-widget-container__widget';w.appendChild(i);
+  const sc=document.createElement('script');sc.type='text/javascript';sc.async=true;sc.src=src;sc.innerHTML=JSON.stringify(cfg);w.appendChild(sc);c.appendChild(w);}
+function miniSym(id,symbol){const el=document.getElementById(id);if(!el)return;
+  tvWidget(el,'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js',
+   {symbol,width:'100%',height:'100%',locale:'en',dateRange:'12M',colorTheme:'dark',isTransparent:true,autosize:true,chartOnly:false});}
+
+/* ---------------- modal ---------------- */
+const overlay=document.getElementById('overlay'),modal=document.getElementById('modal');
+function openModal(sym){
+  const u=UNIVERSE.find(x=>x.s===sym); if(!u)return;
+  const e=Q[sym]?evaluate(u):null, f=F[sym]||{}, q=(e&&e.q)||{};
+  const rows=(f.yrs||[]).map(y=>'<tr><td>'+y.y+'</td><td>'+fmtINR(y.rev/1e9)+'</td><td>'+fmtINR(y.ni/1e9)+'</td><td>'+((y.ni>0&&y.rev>0)?((y.ni/y.rev*100).toFixed(0)+'%'):'—')+'</td></tr>').join('');
+  modal.innerHTML=
+   '<span class="x" onclick="closeModal()">✕</span>'
+   +'<div class="m-head"><span class="tk">'+u.s.replace('_','&')+'</span>'+(e?badge(e):'')+'</div>'
+   +'<div class="m-sub">'+u.n+' · '+u.sec+' · '+(q.price?money(q.price):'')+(q.mcap?(' · '+fmtINR(q.mcap)+' · P/E '+(q.pe?q.pe.toFixed(1):'—')):'')
+     +' · <a class="salink" style="margin:0" href="https://stockanalysis.com/quote/nse/'+u.s+'/statistics/" target="_blank" rel="noopener">live 200-DMA &amp; stats ↗</a></div>'
+   +'<div class="m-grid"><div><div class="chartbox" id="advchart"></div></div>'
+   +'<div class="side">'+(e?screenPanel(e):'')
+   +'<div class="card"><h3>Revenue &amp; Net Profit (PAT)</h3><div class="loadnote">Annual filings · FY ends March'+(u.fx?' · reported in USD, converted at USD/INR 95.40':'')+'</div>'
+   +'<table class="fin"><thead><tr><th>Year</th><th>Revenue</th><th>PAT</th><th>Margin</th></tr></thead><tbody>'+rows+'</tbody></table>'
+   +'<div class="loadnote" style="margin-top:8px;color:var(--accent)">Growth = CAGR per-annum, FY2022 → FY2026</div>'
+   +'<div class="growth3">'
+     +'<div class="gcell"><div class="l">Revenue p.a.</div><div class="v '+clsv(f.revCAGR||0)+'">'+pct(f.revCAGR)+'</div></div>'
+     +'<div class="gcell"><div class="l">PAT p.a.</div><div class="v '+clsv(f.niCAGR||0)+'">'+pct(f.niCAGR)+'</div></div>'
+     +'<div class="gcell"><div class="l">Rev latest YoY</div><div class="v '+clsv(f.revYoY||0)+'">'+pct(f.revYoY)+'</div></div>'
+   +'</div></div>'
+   +'<div class="card"><h3>Live technicals</h3><div id="tech" style="height:400px"></div></div>'
+   +'</div></div>';
+  overlay.classList.add('open');document.body.style.overflow='hidden';
+  tvWidget(document.getElementById('advchart'),'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js',
+    {symbol:'NSE:'+u.s,autosize:true,interval:'D',timezone:'Asia/Kolkata',theme:'dark',style:'1',locale:'en',hide_side_toolbar:true,allow_symbol_change:false,
+     studies:[{id:'MASimple@tv-basicstudies',inputs:{length:200}},{id:'MASimple@tv-basicstudies',inputs:{length:50}}],withdateranges:true});
+  tvWidget(document.getElementById('tech'),'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js',
+    {interval:'1M',width:'100%',height:'100%',symbol:'NSE:'+u.s,showIntervalTabs:true,displayMode:'single',colorTheme:'dark',isTransparent:true,locale:'en'});
+}
+function screenPanel(e){
+  const c=e.level==='pass'?'b-pass':(e.level==='watch'?'b-watch':'b-fail');
+  const d=e.level==='pass'?'dot-g':(e.level==='watch'?'dot-y':'dot-r');
+  const t=e.level==='pass'?'PASSES GATE':(e.level==='watch'?'PARTIAL':'FAILS GATE');
+  return '<div class="card"><h3>Screen result <span class="badge '+c+'" style="margin:0 0 0 6px"><span class="dot '+d+'"></span>'+t+'</span></h3>'
+   +'<div class="scr-gate">'
+   +'<div class="g"><div class="l">Growth</div><div class="v '+(e.growthOK?'up':'down')+'">rev '+pct(e.f.revCAGR)+' '+(e.revOK?'✓':'✗')+' · PAT '+pct(e.f.niCAGR)+' '+(e.niGrowthOK?'✓':'✗')+'</div></div>'
+   +'<div class="g"><div class="l">Entry vs 200-DMA</div><div class="v '+(e.priceOK?'up':'down')+'">'+belowLabel(e)+' '+(e.priceOK?'✓ ≥'+THR.below+'% below':'✗')+'</div></div>'
+   +'</div>'
+   +'<div class="loadnote" style="margin-top:8px">Gate: revenue CAGR ≥ '+THR.rev+'% <b>and</b> PAT positive &amp; rising (≥ '+THR.ni+'% CAGR) <b>and</b> price at least '+THR.below+'% below its 200-DMA. Orange 200-DMA &amp; blue 50-DMA are plotted on the chart.</div></div>';
+}
+function closeModal(){overlay.classList.remove('open');document.body.style.overflow='';modal.innerHTML='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+/* ---------------- init ---------------- */
+miniSym('mkt1','NSE:NIFTY');miniSym('mkt2','NSE:BANKNIFTY');miniSym('mktgold','OANDA:XAUUSD');
+loadSnapshot();
+loadLive();
+setInterval(loadLive,120000);
+document.getElementById('disc').innerHTML=
+ 'Method: a screener over the Nifty 50 — growth (revenue &amp; PAT CAGR, FY2022→FY2026) plus price trading below its 200-DMA by at least your set amount. '
+ +'<b>Prices are fetched live</b> from stockanalysis.com on load and every 2 minutes; market cap, P/E and the % vs 200-DMA are recomputed from that live price. '
+ +'The slow-moving reference values (200-DMA, 50-DMA, market cap and P/E baselines) were refreshed '+BASE_DATE+'; annual financials update quarterly. Charts, moving-average overlays &amp; technicals are live from TradingView. '
+ +'Infosys and HCL Technologies are reported in USD by the data source and were converted at USD/INR 95.40. Constituents reflect the Nifty 50 as listed on 4 Aug 2026. Ranking/score is illustrative. '
+ +'<b>Not investment advice.</b> Verify all figures independently before acting. Generated '
+ +new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'.';
+</script>
+</body>
+</html>
