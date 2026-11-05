@@ -216,7 +216,7 @@ const UNIVERSE=[
  {s:"XOM",  tv:"NYSE:XOM",    n:"Exxon Mobil", sec:"Energy"},
  {s:"CVX",  tv:"NYSE:CVX",    n:"Chevron", sec:"Energy"},
  {s:"COST", tv:"NASDAQ:COST", n:"Costco", sec:"Consumer"},
- {s:"WMT",  tv:"NYSE:WMT",    n:"Walmart", sec:"Consumer"},
+ {s:"WMT",  tv:"NASDAQ:WMT",    n:"Walmart", sec:"Consumer"},
  {s:"HD",   tv:"NYSE:HD",     n:"Home Depot", sec:"Consumer"},
  {s:"PG",   tv:"NYSE:PG",     n:"Procter & Gamble", sec:"Consumer"},
  {s:"KO",   tv:"NYSE:KO",     n:"Coca-Cola", sec:"Consumer"},
@@ -341,7 +341,16 @@ function loadSnapshot(){
 /* ---------------- LIVE data from stockanalysis.com (CORS-enabled, no key) ---------------- */
 function tfetch(u,ms){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms||12000);return fetch(u,{cache:'no-store',signal:c.signal}).finally(()=>clearTimeout(id));}
 function pnum(x){if(x==null)return null;if(typeof x==='number')return x;let t=(''+x).replace(/[,$%\s]/g,'');let m=1;const c=t.slice(-1).toUpperCase();if(c==='T'){m=1e12;t=t.slice(0,-1);}else if(c==='B'){m=1e9;t=t.slice(0,-1);}else if(c==='M'){m=1e6;t=t.slice(0,-1);}const v=parseFloat(t);return isNaN(v)?null:v*m;}
-async function saGet(path){const r=await tfetch('https://stockanalysis.com'+path,11000);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j||!j.data)throw new Error('no data');return j.data;}
+
+/* Live quotes via TradingView scanner (CORS-enabled). stockanalysis.com stopped allowing cross-site price requests. */
+let TVP=null;
+function tvAll(market,tickers){
+  if(!TVP){TVP=(async()=>{const r=await fetch('https://scanner.tradingview.com/'+market+'/scan',{method:'POST',body:JSON.stringify({symbols:{tickers:tickers},columns:['close','change']})});
+    if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();const m={};(j.data||[]).forEach(x=>{if(x.d&&x.d[0]>0)m[x.s]={p:x.d[0],cp:x.d[1]}});return m})();
+    TVP.catch(()=>{TVP=null});setTimeout(()=>{TVP=null},4000);}
+  return TVP;
+}
+async function saGet(path){const sym=path.split('/').pop();const u=UNIVERSE.find(x=>x.s===sym);const m=await tvAll('america',UNIVERSE.map(x=>x.tv));const q=m[u.tv];if(!q)throw new Error('no data');return q;}
 async function loadLive(){
   setStatus('Fetching live prices…');
   let ok=0, done=0;
